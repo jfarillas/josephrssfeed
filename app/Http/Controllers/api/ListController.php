@@ -71,7 +71,7 @@ class ListController extends BaseController
             $items[$ctr]['datePosted'] = $key->get_date('j F Y | g:i a');
             $ctr++;
         }
-        $data = [
+        $data[] = [
           'title' => $feed->get_title(),
           'permalink' => $feed-> get_permalink(),
           'items' => $items
