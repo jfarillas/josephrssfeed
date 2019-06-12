@@ -1,17 +1,16 @@
 const express = require('express');
 const request = require('request');
-const bodyParser = require('body-parser');
+var cors = require('cors');
 
 const app = express();
 const PORT = 3000;
 
 app.listen(PORT, () => console.log(`Express server currently running on port ${PORT}`));
 
-// create application/json parser
-let jsonParser = bodyParser.json()
-
-// create application/x-www-form-urlencoded parser
-let urlencodedParser = bodyParser.urlencoded({ extended: false })
+app.use(cors());
+app.use(express.static(__dirname + '/'));
+app.engine('html', require('ejs').renderFile);
+app.set('view engine', 'html');
 
 function errResponse(err, res) 
 {
@@ -28,6 +27,40 @@ function errResponse(err, res)
   }
 }
 
+function templateDetails(body)
+{
+  let parseBody = JSON.parse(body);
+  let data = {};
+  let headerTitle = {};
+  let getItems = {};
+  headerTitle['permalink'] = parseBody['data'][0].permalink;
+  headerTitle['title'] = parseBody['data'][0].title;
+  Object.keys(parseBody['data'][0]).forEach(key => {
+    if (parseBody['data'][0][key] instanceof Array) {
+      Object.keys(parseBody['data'][0][key]).forEach(subKey => {
+        getItems[subKey] = parseBody['data'][0][key][subKey];
+      });
+    }
+  });
+  data['headerTitle'] = headerTitle;
+  data['getItems'] = getItems;
+  return data;
+}
+
+function requestContent(catUrl, category, res)
+{
+  request(catUrl, function (error, response, body) {
+    if (!errResponse(error, response)) {
+      let rs = templateDetails(body);
+      let headerTitle = rs.headerTitle;
+      let getItems = rs.getItems;
+      res.send(rs);
+    } else {
+      res.send('Something went wrong! Cannot scrape '+capitalise(category)+' RSS feed.');
+    }
+  });
+}
+
 let urls = {
   'list': 'https://rssfeeds.jfarillas.com/api/list',
   'news': 'https://rssfeeds.jfarillas.com/api/list/news',
@@ -42,95 +75,36 @@ const capitalise = (s) => {
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
-app.get('/', function(req, res){ 
-
+app.get('/list', function(req, res){ 
   request(urls.list, function (error, response, body) {
-        
     if (!errResponse(error, response)) {
-      /* res.send(`
-        <div>
-          <h1>RSS Feed Categories</h1>
-            <ul>
-              <li style="list-style-type:none">Learn about Express routing</li>
-              <li style="list-style-type:none">Create my own routes</li>
-            </ul>
-        </div>
-      `); */
-      /* for (const [key, value] of body.data.entries(obj)) {
-        console.log(key, value);
-    } */
       let parseBody = JSON.parse(body);
-      let template = `<ul>`;
+      let data = {};
       Object.keys(parseBody['data'][0]).forEach(key => {
-        template += `<li style="list-style-type:none"><a href="/${key}">${parseBody['data'][0][key].title}</a></li>`;
+        data[key] = parseBody['data'][0][key].title;
       });
-      template += `</ul>`;
-      console.log(parseBody['data'][0]);
-
-      res.send(template);
+      res.send(data);
     } else {
         res.send('Something went wrong! Cannot scrape RSS feed categories.');
     }
   });
-
 });
 
-app.get('/'+Object.keys(urls)[1], function(req, res){ 
-
-  request(urls.news, function (error, response, body) {
-        
-    if (!errResponse(error, response)) {
-      let parseBody = JSON.parse(body);
-      let template = `<ul>`;
-      Object.keys(parseBody['data']).forEach(key => {
-        console.log(parseBody['data'][key]);
-        //template += `<li style="list-style-type:none"><a href="/${key}">${parseBody['data'][key].title}</a></li>`;
-      });
-      //template += `</ul>`;
-      //console.log(parseBody['data']);
-      res.send(body);
-    } else {
-      res.send('Something went wrong! Cannot scrape '+capitalise(Object.keys(urls)[1])+' RSS feed.');
-    }
-  });
-
-});
-
-app.get('/'+Object.keys(urls)[2], function(req, res){ 
-
-  request(urls.sport, function (error, response, body) {
-        
-    if (!errResponse(error, response)) {
-      res.send(body);
-    } else {
-      res.send('Something went wrong! Cannot scrape '+capitalise(Object.keys(urls)[2])+' RSS feed.');
-    }
-  });
-
-});
-
-app.get('/'+Object.keys(urls)[3], function(req, res){ 
-
-  request(urls.business, function (error, response, body) {
-        
-    if (!errResponse(error, response)) {
-      res.send(body);
-    } else {
-      res.send('Something went wrong! Cannot scrape '+capitalise(Object.keys(urls)[3])+' RSS feed.');
-    }
-  });
-
-});
-
-app.get('/'+Object.keys(urls)[4], function(req, res){ 
-
-  request(urls.entertainment, function (error, response, body) {
-        
-    if (!errResponse(error, response)) {
-      res.send(body);
-    } else {
-      res.send('Something went wrong! Cannot scrape '+capitalise(Object.keys(urls)[4])+' RSS feed.');
-    }
-  });
-
+app.get('/:category', function(req, res){ 
+  let category = req.params.category;
+  console.log(category);
+  switch (category) {
+    case 'news':
+      requestContent(urls.news, category, res);
+    break;
+    case 'sport':
+      requestContent(urls.sport, category, res);
+    break;
+    case 'business':
+      requestContent(urls.business, category, res);
+    break;
+    case 'entertainment':
+      requestContent(urls.entertainment, category, res);
+    break;
+  }
 });
