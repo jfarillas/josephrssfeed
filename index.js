@@ -15,14 +15,8 @@ app.set('view engine', 'html');
 function errResponse(err, res) 
 {
   if (err || res !== 200) {
-      // Print the error if one occurred and handle it
-      console.log('error:', err); 
-      // Print the response status code if a response was received
-      console.log('statusCode:', res && res.statusCode);
       return false;
   } else {
-      // Print the response status code if a response was received
-      console.log('statusCode:', res && res.statusCode);
       return true;
   }
 }
@@ -92,7 +86,6 @@ app.get('/list', function(req, res){
 
 app.get('/:category', function(req, res){ 
   let category = req.params.category;
-  console.log(category);
   switch (category) {
     case 'news':
       requestContent(urls.news, category, res);
