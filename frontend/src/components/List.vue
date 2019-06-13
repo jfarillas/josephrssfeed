@@ -43,7 +43,6 @@ export default {
     getList() {
       apiService.getList().then((data) => {
         this.data = data;
-        console.log(this.data);
       })
     }
   },

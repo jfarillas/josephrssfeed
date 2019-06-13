@@ -48,9 +48,6 @@ export default {
         this.data = data.getItems;
         this.headerTitle = data.headerTitle.title;
         this.headerTitlePermalink = data.headerTitle.permalink;
-        console.log(this.data);
-        console.log(this.headerTitle);
-        console.log(this.headerTitlePermalink);
       })
     }
   },

@@ -12,7 +12,16 @@
 
 export default {
   name: 'app',
-  components: { }
+  components: { },
+  methods: {
+    redirect() {
+      this.$router.push('list');
+    }
+  },
+
+  mounted() {
+    this.redirect();
+  },
 }
 </script>
 
