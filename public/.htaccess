@@ -18,4 +18,10 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+    RewriteCond %{REQUEST_URI} !^/index.html$
+    RewriteCond %{REQUEST_URI} !^/api/$
+    RewriteCond %{REQUEST_URI} !^/index.php/api/$
+    RewriteRule ^index\.html$ / [R=301,L]
+    RewriteRule ^(.*)/index\.html$ /$1/ [R=301,L]
+    DirectoryIndex index.html index.htm index.php
 </IfModule>

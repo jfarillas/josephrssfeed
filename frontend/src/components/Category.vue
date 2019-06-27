@@ -24,8 +24,7 @@
 </div>
 </template>
 <script>
-import {APIService} from '../APIService';
-
+import { APIService } from '../APIService';
 const apiService = new APIService();
 
 export default {
@@ -41,8 +40,21 @@ export default {
     };
   },
 
+  computed: {
+    loggedIn: function() {
+      return this.$store.getters.loggedIn;
+    }
+  },
+
   methods: {
-    getList() {
+    loginHandler: function() {
+      if (this.loggedIn) {
+        // action here
+      } else {
+        this.$router.push('login')
+      }
+    },
+    getList: function() {
       const category = this.$route.params.name;
       apiService.getList(category).then((data) => {
         this.data = data.getItems;
@@ -53,8 +65,19 @@ export default {
   },
 
   mounted() {
+    this.loginHandler();
+    if (null === localStorage.getItem('category') || null !== localStorage.getItem('category')) {
+      localStorage.setItem('category', '/category/'+this.$route.params.name);
+      console.log(localStorage.getItem('category'));
+    } 
     this.getList();
   },
+
+  watch: {
+    loggedIn: function() {
+      this.loginHandler;
+    }
+  }
 }
 </script>
 

@@ -1,11 +1,14 @@
 const express = require('express');
 const request = require('request');
-var cors = require('cors');
+const cors = require('cors');
+const fs = require('fs');
+const https = require('https');
+const config = require('./config.json');
 
 const app = express();
-const PORT = 3000;
+//const PORT = 3000;
 
-app.listen(PORT, () => console.log(`Express server currently running on port ${PORT}`));
+//app.listen(PORT, () => console.log(`Express server currently running on port ${PORT}`));
 
 app.use(cors());
 app.use(express.static(__dirname + '/'));
@@ -56,11 +59,11 @@ function requestContent(catUrl, category, res)
 }
 
 let urls = {
-  'list': 'https://rssfeeds.jfarillas.com/api/list',
-  'news': 'https://rssfeeds.jfarillas.com/api/list/news',
-  'sport': 'https://rssfeeds.jfarillas.com/api/list/sport',
-  'business': 'https://rssfeeds.jfarillas.com/api/list/business',
-  'entertainment': 'https://rssfeeds.jfarillas.com/api/list/entertainment' 
+  'list': config.hostname+'/api/v1/list',
+  'news': config.hostname+'/api/v1/list/news',
+  'sport': config.hostname+'/api/v1/list/sport',
+  'business': config.hostname+'/api/v1/list/business',
+  'entertainment': config.hostname+'/api/v1/list/entertainment' 
 };
 
 // Capitalise first letter
@@ -69,35 +72,50 @@ const capitalise = (s) => {
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
-app.get('/list', function(req, res){ 
-  request(urls.list, function (error, response, body) {
-    if (!errResponse(error, response)) {
-      let parseBody = JSON.parse(body);
-      let data = {};
-      Object.keys(parseBody['data'][0]).forEach(key => {
-        data[key] = parseBody['data'][0][key].title;
-      });
-      res.send(data);
-    } else {
+app.get('*/list', function(req, res){ 
+  if (req.secure) {
+    request(urls.list, function (error, response, body) {
+      if (!errResponse(error, response)) {
+         let parseBody = JSON.parse(body);
+         let data = {};
+         Object.keys(parseBody['data'][0]).forEach(key => {
+           data[key] = parseBody['data'][0][key].title;
+         });
+         res.send(data);
+      } else {
         res.send('Something went wrong! Cannot scrape RSS feed categories.');
-    }
-  });
+      }
+    });	  
+  } else {
+    res.redirect(301, 'https://localhost:3000/list');
+  }
 });
 
-app.get('/:category', function(req, res){ 
-  let category = req.params.category;
-  switch (category) {
-    case 'news':
-      requestContent(urls.news, category, res);
-    break;
-    case 'sport':
-      requestContent(urls.sport, category, res);
-    break;
-    case 'business':
-      requestContent(urls.business, category, res);
-    break;
-    case 'entertainment':
-      requestContent(urls.entertainment, category, res);
-    break;
+app.get('*/:category', function(req, res){
+  let category = req.params.category;	
+  if (req.secure) {
+    switch (category) {
+      case 'news':
+        requestContent(urls.news, category, res);
+      break;
+      case 'sport':
+        requestContent(urls.sport, category, res);
+      break;
+      case 'business':
+        requestContent(urls.business, category, res);
+      break;
+      case 'entertainment':
+        requestContent(urls.entertainment, category, res);
+      break;
+    }
+  } else {
+    res.redirect(301, 'https://localhost:3000/'+category);
   }
+});
+
+https.createServer({
+  key: fs.readFileSync('/home/jfarillas/localhost+2-key.pem'),
+  cert: fs.readFileSync('/home/jfarillas/localhost+2.pem')
+}, app).listen(3000, '0.0.0.0', () => {
+  console.log('Listening...')
 });

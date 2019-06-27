@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import Login from './components/Login.vue'
 import List from './components/List.vue'
 import Category from './components/Category.vue'
 
@@ -9,6 +10,11 @@ export default new Router({
   mode: 'history', // Remove hashbang
   routes: [
     {
+      path: '/login',
+      name: 'login',
+      component: Login
+    },
+    {
       path: '/list',
       name: 'list',
       component: List
@@ -16,7 +22,8 @@ export default new Router({
     {
       path: '/category/:name',
       name: 'category',
-      component: Category
+      component: Category,
+      canReuse: false
     }
   ]
 })

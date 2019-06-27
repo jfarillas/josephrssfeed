@@ -9,6 +9,13 @@ use \Feeds;
 
 class ListController extends BaseController
 {
+    public $feedAry = [
+            'news' => 'https://www.independent.ie/irish-news/rss',
+            'sport' => 'https://www.independent.ie/sport/rss',
+            'business' => 'https://www.independent.ie/business/rss',
+            'entertainment' => 'https://www.independent.ie/entertainment/rss'
+    ];
+
     /**
      * Display a listing of the resource.
      *
@@ -16,14 +23,8 @@ class ListController extends BaseController
      */
     public function index() {
         // if RSS Feed has invalid mime types, force to read
-        $feedAry = [
-            'news' => 'https://www.independent.ie/news/rss',
-            'sport' => 'https://www.independent.ie/sport/rss',
-            'business' => 'https://www.independent.ie/business/rss',
-            'entertainment' => 'https://www.independent.ie/entertainment/rss'
-        ];
         $rs = [];
-        foreach ($feedAry as $key => $val) {
+        foreach ($this->feedAry as $key => $val) {
             $feed = Feeds::make($val, true);
             $rs[$key] = [
               'title' => (null !== $feed->get_title()) ? $feed->get_title() : '',
@@ -33,30 +34,22 @@ class ListController extends BaseController
             
         }
         $data = [$rs];
-
-        /* $feed = Feeds::make([
-            'https://www.independent.ie/news/rss',
-            'https://www.independent.ie/sport/rss',
-            'https://www.independent.ie/business/rss',
-            'https://www.independent.ie/entertainment/rss'
-        ]); */
-
         return $this->sendResponse($data, 'RSS Feed Categories retrieved successfully.');
     }
 
     public function category($category) {
         switch ($category) {
             case 'news':
-                $feedUrl = 'https://www.independent.ie/news/rss';
+                $feedUrl = $this->feedAry['news'];
             break;
             case 'sport':
-                $feedUrl = 'https://www.independent.ie/sport/rss';
+                $feedUrl = $this->feedAry['sport'];
             break;
             case 'business':
-                $feedUrl = 'https://www.independent.ie/business/rss';
+                $feedUrl = $this->feedAry['business'];
             break;
             case 'entertainment':
-                $feedUrl = 'https://www.independent.ie/entertainment/rss';
+                $feedUrl = $this->feedAry['entertainment'];
             break;
         }
 

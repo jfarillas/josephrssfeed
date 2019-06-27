@@ -14,7 +14,9 @@
     "axios": "^0.19.0",
     "core-js": "^2.6.5",
     "vue": "^2.6.10",
-    "vue-router": "^3.0.6"
+    "vue-router": "^3.0.6",
+    "vuex": "^3.1.1",
+    "vuex-persistedstate": "^2.5.4"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.8.0",
@@ -34,7 +36,9 @@
       "plugin:vue/essential",
       "eslint:recommended"
     ],
-    "rules": {},
+    "rules": {
+      "no-console": "off"
+    },
     "parserOptions": {
       "parser": "babel-eslint"
     }
@@ -47,5 +51,13 @@
   "browserslist": [
     "> 1%",
     "last 2 versions"
+  ],
+  "size-limit": [
+  {
+    "path": [
+      "dist/**/*.{js,css,svg,png,jpg}"
+    ],
+    "webpack": false
+  }
   ]
 }

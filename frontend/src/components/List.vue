@@ -21,8 +21,8 @@
 </div>
 </template>
 <script>
-import {APIService} from '../APIService';
-
+import router from '../router'
+import { APIService } from '../APIService';
 const apiService = new APIService();
 
 export default {
@@ -39,8 +39,21 @@ export default {
     };
   },
 
+  computed: {
+    loggedIn: function() {
+      return this.$store.getters.loggedIn;
+    }
+  },
+
   methods: {
-    getList() {
+    loginHandler: function() {
+      if (this.loggedIn) {
+        // action here
+      } else {
+        this.$router.push('login')
+      }
+    },
+    getList: function() {
       apiService.getList().then((data) => {
         this.data = data;
       })
@@ -48,8 +61,23 @@ export default {
   },
 
   mounted() {
+    this.loginHandler();
     this.getList();
+    this.$router.beforeEach((to, from, next) => {
+      const isLogged = this.$store.getters.loggedIn;
+      if (isLogged && to.name == 'login') {
+        // no need to go to login page, if user is already logged in - redirect
+        return this.$router.push('list');
+      }
+      return next();
+    });
   },
+
+  watch: {
+    loggedIn: function() {
+      this.loginHandler;
+    }
+  }
 }
 </script>
 
